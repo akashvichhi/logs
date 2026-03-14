@@ -1,0 +1,499 @@
+# Full Stack App — Project Prompt Template
+
+## How to Use This Template
+Replace every `{{ PLACEHOLDER }}` with your app-specific details before pasting into Cursor/Windsurf.
+
+| Placeholder | Example |
+|---|---|
+| `{{ APP_NAME }}` | logs, crm, inventory |
+| `{{ APP_DESCRIPTION }}` | A self-hosted log management system |
+| `{{ MODULES }}` | auth, api_keys, logs |
+| `{{ MODULE }}` | auth |
+
+---
+
+## What to Build
+{{ APP_DESCRIPTION }}
+
+---
+
+# Backend
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Language | Python 3.11 |
+| Framework | FastAPI (latest) |
+| Database | PostgreSQL (latest) |
+| ORM | SQLAlchemy 2.x |
+| Migrations | Alembic (latest) |
+| Validation | Pydantic v2 + pydantic-settings |
+| Auth | python-jose (JWT) + passlib (bcrypt) |
+| Containerization | Docker + Docker Compose |
+
+## Project Structure
+
+```
+{{ APP_NAME }}/
+├── .env
+├── .env.example
+├── .gitignore
+├── docker-compose.yml
+└── server/
+    ├── Dockerfile
+    ├── requirements.txt
+    ├── main.py
+    ├── alembic.ini
+    ├── alembic/
+    │   ├── env.py
+    │   └── versions/
+    └── app/
+        ├── api.py        ← central router, all modules registered under /api/v1
+        ├── core/         ← config, database, security
+        └── {{ MODULES }}/  ← one folder per module
+```
+
+Each module contains: `models.py`, `schemas.py`, `service.py`, `router.py`. Routers are thin — all business logic lives in services.
+
+## Environment Variables
+
+One `.env` file at project root. Both docker-compose and backend app read from it.
+
+```env
+POSTGRES_USER=
+POSTGRES_PASSWORD=
+POSTGRES_DB=
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+
+SECRET_KEY=
+JWT_ALGORITHM=HS256
+JWT_EXPIRE_HOURS=24
+```
+
+## Docker Setup
+
+### docker-compose.yml
+- Services: `postgres`, `server`, `web` — container names must match service names exactly
+- Pass env vars using `environment:` with `${VAR_NAME}` syntax — never use `env_file:`
+- `server` depends on `postgres` with `condition: service_healthy`
+- `web` depends on `server`
+- Mount source folders as volumes for hot reload
+- Always pin PostgreSQL to a specific major version e.g. `postgres:16-alpine` — never `postgres:latest`
+
+### server/Dockerfile
+- Base image: `python:3.11-slim`
+- Install `gcc` and `libpq-dev` before pip install
+- Copy and install `requirements.txt` before copying source code
+- CMD:
+```dockerfile
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload", "--reload-dir", "app"]
+```
+
+## Architecture
+
+### core/
+- `config.py` — pydantic-settings `BaseSettings`, single `settings` instance, use `urllib.parse.quote_plus` on DB password when building `DATABASE_URL`
+- `database.py` — SQLAlchemy engine, `Base`, `get_db` dependency
+- `security.py` — bcrypt hash/verify, JWT create/decode
+
+### Module structure
+```
+app/{{ MODULE }}/
+    ├── models.py     ← SQLAlchemy models
+    ├── schemas.py    ← Pydantic request/response schemas
+    ├── service.py    ← all business logic as static methods
+    └── router.py     ← thin, only calls service methods
+```
+
+### Authentication
+Two auth methods — include both in every project:
+
+**JWT — for human users**
+- Login accepts JSON body `{ username, password }` → returns JWT token
+- Passed as `Authorization: Bearer <token>` header
+- `get_current_user` dependency in `app/auth/dependencies.py`
+
+**API Keys — for programmatic access**
+- Passed as `X-API-Key: <key>` header
+- `get_user_by_api_key` dependency in `app/api_keys/dependencies.py`
+- Key format: `{{ APP_NAME }}_` prefix + 32 char urlsafe random string
+- Store only bcrypt hash + first 10 chars as prefix for fast DB lookup
+- Show full key once on creation — never retrievable again
+- Update `last_used` on every use
+
+### Standard Endpoints
+```
+POST  /api/v1/auth/register
+POST  /api/v1/auth/login
+GET   /api/v1/auth/me
+
+GET   /    → returns app name, version, status as JSON
+```
+
+## Alembic Migrations
+
+### env.py rules
+- Read credentials using `os.environ.get()` directly — never import `settings` or read `.env`
+- Use `urllib.parse.quote_plus` on password when building DATABASE_URL
+- Add project root to `sys.path` before importing any `app.*` modules
+- Import all models so `--autogenerate` detects them
+
+### Migration files
+- Numbered sequentially: `001_`, `002_`, `003_`
+- First migration has `down_revision = None`
+- Every migration has both `upgrade()` and `downgrade()`
+- One migration per table
+
+### Running migrations — always manual, never on startup
+```bash
+docker exec server alembic upgrade head
+docker exec server alembic current
+docker exec server alembic downgrade -1
+docker exec server alembic downgrade base
+docker exec server alembic revision --autogenerate -m "description"
+```
+
+## Critical Rules — Backend
+
+- Migrations run manually, never on startup
+- Never use `Base.metadata.create_all()`
+- Never use `env_file:` in docker-compose — use `environment:` with `${VAR}`
+- Never store full API key — bcrypt hash + prefix only
+- Always encode DB password with `quote_plus` in DATABASE_URL
+- `alembic/env.py` reads from `os.environ` not `.env`
+- Always use `--host 0.0.0.0` in uvicorn CMD
+- Always use `--reload-dir app` in uvicorn CMD
+- Always pin PostgreSQL to a specific major version — never `latest`
+- Always include all required packages with their extras in `requirements.txt`
+- Never name a SQLAlchemy model attribute `metadata` — reserved by `DeclarativeBase`. Use a different name and map explicitly e.g. `extra = Column("metadata", JSONB)`
+- Never use `OAuth2PasswordRequestForm` — login always accepts JSON body
+- Never use `Depends()` in both `Annotated` and default value — use `param: Type = Depends(...)` only
+- GIN index on `text` column requires `pg_trgm` extension and `postgresql_ops` operator class
+- GIN index on `JSONB` column uses default operator class — no extension needed
+- Passwords must be truncated to 72 bytes before bcrypt hashing
+
+---
+
+# Frontend
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | React (latest) |
+| Build Tool | Vite (latest) |
+| UI Library | Ant Design / antd (latest) |
+| HTTP Client | Axios (latest) |
+| Routing | React Router (latest) |
+| Forms | React Hook Form + Yup (latest) |
+| Server State | TanStack Query / React Query (latest) |
+| Date Handling | dayjs (bundled with Ant Design) |
+| Styles | SCSS Modules |
+
+Do not pin any package versions. Always use latest.
+
+## Project Structure
+
+```
+web/
+├── Dockerfile
+├── index.html
+├── vite.config.ts
+├── package.json
+├── .env
+└── src/
+    ├── main.tsx
+    ├── App.tsx
+    ├── constants/
+    │   └── routes.ts        ← all route paths as constants
+    ├── components/
+    │   ├── form/
+    │   │   ├── text_field.tsx
+    │   │   └── select_field.tsx
+    │   └── ui/              ← Spinner, EmptyState, etc.
+    ├── hooks/               ← non-data-fetching hooks only
+    ├── services/
+    │   ├── axios.ts
+    │   └── {{ MODULE }}.ts  ← API calls + React Query hooks co-located
+    ├── types/
+    │   └── user.ts          ← User type and other API entity types
+    ├── pages/
+    │   └── {{ page_name }}/ ← snake_case folder
+    │       ├── index.ts              ← re-export default only
+    │       ├── {{ page_name }}.tsx    ← page shell, layout only, no form logic
+    │       ├── {{ page_name }}_f_orm.tsx ← extracted form component (if page has a form)
+    │       ├── {{ page_name }}_table.tsx ← extracted table component (if page has a table)
+    │       └── styles.module.scss      ← only if extra styles needed
+    └── utils/
+        └── token.ts         ← getToken, setToken, removeToken using key "access_token"
+```
+
+## Naming Conventions
+
+| Thing | Convention | Example |
+|---|---|---|
+| Page folders | `snake_case` | `login/`, `api_keys/` |
+| Component files | `snake_case` | `login.tsx`, `login_form.tsx` |
+| Style / utility files | `snake_case` | `styles.module.scss`, `loader.module.scss` |
+| Variables / hooks | `camelCase` | `isPending`, `useLogin` |
+| Components | `PascalCase` | `LoginForm`, `TextField` |
+| Interfaces | `PascalCase` with `I` prefix | `ITextField`, `ILoginRequest` |
+| Sub-interfaces (nested types) | `PascalCase` with `I` prefix | `ISelectOption` |
+
+## Interfaces
+ 
+Every component **must** declare a named `I`-prefixed interface for its props. The component is declared as a `const` arrow function using that interface. This applies to all components — pages, form fields, UI components.
+ 
+```tsx
+// ✅ Correct
+interface ITextField<T extends FieldValues> {
+  control: Control<T>
+  label: string
+  name: Path<T>
+  placeholder?: string
+  type?: 'text' | 'email' | 'password'
+}
+ 
+export const TextField = <T extends FieldValues>({
+  control,
+  label,
+  name,
+  placeholder,
+  type = 'text',
+}: ITextField<T>) => { ... }
+ 
+// ❌ Wrong — anonymous inline type, default export function style
+export default function TextField({ label, name }: { label: string; name: string }) { ... }
+```
+ 
+All API entity types in `types/` also use the `I` prefix:
+ 
+```ts
+// types/user.ts
+export interface IUser { ... }
+export interface ILoginRequest { ... }
+export interface ILoginResponse { ... }
+```
+
+## Docker Setup
+
+### web/Dockerfile
+```dockerfile
+FROM node:lts-alpine
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
+```
+
+Add to `.env`:
+```env
+VITE_API_URL=http://localhost:8000
+```
+
+## Architecture
+
+### constants/routes.ts
+All route paths as constants — never hardcode strings in components:
+```ts
+export const ROUTES = {
+  LOGIN: '/login',
+  DASHBOARD: '/dashboard',
+} as const
+```
+
+### services/axios.ts
+```ts
+const instance = axios.create({ baseURL: import.meta.env.VITE_API_URL })
+
+instance.interceptors.request.use((config) => {
+  const token = localStorage.getItem('access_token')
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+instance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('access_token')
+      window.location.href = ROUTES.LOGIN
+    }
+    return Promise.reject(error)
+  }
+)
+
+export const get = <T>(url: string, params?: object) => instance.get<T>(url, { params }).then(r => r.data)
+export const post = <T>(url: string, body?: object) => instance.post<T>(url, body).then(r => r.data)
+export const put = <T>(url: string, body?: object) => instance.put<T>(url, body).then(r => r.data)
+export const del = <T>(url: string) => instance.delete<T>(url).then(r => r.data)
+```
+
+### services/{{ MODULE }}.ts
+API calls and React Query hooks co-located per module. Request/response param types defined inline. Only API entity types (e.g. `User`) go in `types/`.
+
+### types/
+Only types for data returned by the API. `user.ts` always exists:
+```ts
+// types/user.ts
+export interface IUser {
+  id: number
+  username: string
+  email: string
+  isActive: boolean
+  createdAt: string
+}
+```
+
+### Form field components
+Use Yup schema validation via `yupResolver` — never inline `rules` objects. No `rules` prop on field components.
+
+**TextField**
+```tsx
+export const TextField = <T extends FieldValues>({
+  name,
+  control,
+  label,
+  type = 'text',
+}: {
+  name: Path<T>
+  control: Control<T>
+  label: string
+  type?: string
+}) => (
+  <Controller
+    name={name}
+    control={control}
+    render={({ field, fieldState }) => (
+      <Form.Item
+        label={label}
+        validateStatus={fieldState.error ? 'error' : ''}
+        help={fieldState.error?.message}
+      >
+        <Input {...field} type={type} />
+      </Form.Item>
+    )}
+  />
+)
+```
+
+**SelectField** — same wrapper pattern, uses Ant Design Select:
+```tsx
+export const SelectField = <T extends FieldValues>({
+  name,
+  control,
+  label,
+  options,
+}: {
+  name: Path<T>
+  control: Control<T>
+  label: string
+  options: { label: string; value: string | number }[]
+}) => (
+  <Controller
+    name={name}
+    control={control}
+    render={({ field, fieldState }) => (
+      <Form.Item
+        label={label}
+        validateStatus={fieldState.error ? 'error' : ''}
+        help={fieldState.error?.message}
+      >
+        <Select {...field} options={options} />
+      </Form.Item>
+    )}
+  />
+)
+```
+
+**Usage with Yup:**
+```tsx
+const schema = yup.object({
+  username: yup.string().required('Username is required'),
+  password: yup.string().min(6, 'Password must be at least 6 characters').required(),
+})
+
+type LoginFormValues = yup.InferType<typeof schema>
+
+const { control, handleSubmit } = useForm<LoginFormValues>({
+  resolver: yupResolver(schema),
+})
+```
+
+### Pages
+Each page is a folder. `index.tsx` default exports a component named same as the folder. Forms and tables are always separate components inside the page folder:
+
+```
+pages/
+└── Login/
+    ├── index.ts          ← export default Login
+    ├── login.tsx         ← Login page
+    └── login_form.tsx    ← form extracted as separate component
+
+└── Users/
+    ├── index.ts            ← export default Users
+    ├── Users.tsx           ← Users page
+    ├── users_table.tsx     ← table extracted as separate component
+    ├── user_form.tsx       ← form extracted as separate component
+    └── styles.module.scss
+```
+
+### Auth Flow
+- JWT stored in localStorage under key `access_token`
+- On app load: `useCurrentUser` checks localStorage, calls `/auth/me` to validate
+- `ProtectedRoute` uses `useCurrentUser` — redirects to `ROUTES.LOGIN` if no valid user
+- On logout: remove `access_token` from localStorage, call `queryClient.clear()`, redirect to `ROUTES.LOGIN`
+- On 401: axios interceptor clears `access_token` and redirects to `ROUTES.LOGIN`
+
+### QueryClientProvider
+```tsx
+const queryClient = new QueryClient()
+<QueryClientProvider client={queryClient}><App /></QueryClientProvider>
+```
+
+## Critical Rules — Frontend
+
+- Frontend folder is named `web/` not `client/`
+- Use TypeScript for all files
+- Use `import.meta.env.VITE_API_URL` — never hardcode localhost
+- Every `useMutation` **must** have `onError` calling `message.error(...)`
+- Every `useQuery` error must be surfaced via `message.error(...)`
+- API functions are **not exported** — only hooks are exported
+- Request/response param types are defined **inline** in the service file — only entity types (e.g. `IUser`) go in `types/`
+- `invalidateQueries` must be called `onSuccess` when the mutation affects a list
+- All route paths defined in `constants/routes.ts` — never hardcode route strings anywhere
+- All API calls go through base functions in `services/axios.ts` — never use fetch or raw axios directly
+- React Query hooks and API calls live in `services/{{ MODULE }}.ts` — not in `hooks/`
+- `hooks/` is only for non-data-fetching hooks e.g. `useDebounce`, `useFilters`
+- Request/response param types defined inline in service files — only API entity types go in `types/`
+- `types/user.ts` always exists — `User` type always defined there
+- All forms use React Hook Form with Yup schema via `yupResolver` — never inline `rules` objects
+- No `rules` prop on `TextField` or `SelectField` — validation always comes from Yup schema
+- Use `TextField` and `SelectField` from `components/form/` — never raw Ant Design inputs in pages
+- If a page has a form, extract it as `{{ PageName }}Form.tsx` inside the page folder
+- If a page has a table, extract it as `{{ PageName }}Table.tsx` inside the page folder
+- All data fetching uses `useQuery` — no `useEffect + fetch` patterns
+- All mutations use `useMutation` with `invalidateQueries` on success
+- Never store server state in `useState` — React Query cache only
+- JWT stored in localStorage under key `access_token`
+- `ProtectedRoute` uses `useCurrentUser` from `services/auth.ts` — not a separate Context
+- Each page is a folder — `index.ts` default exports a component named same as the folder
+- Page-specific components live inside the page folder — shared/reusable components in `components/`
+- Never use inline styles — use Ant Design components and props first, then `styles.module.scss` for additional styles
+- Always use Ant Design components: `Flex`, `Space`, `Button`, `Table`, `Form`, `Input`, `Select` etc. — always give these priority over custom HTML elements
+- Apply memoization where appropriate — `memo` for components, `useMemo` for derived values, `useCallback` for functions passed as props
+- All tables use server-side pagination — pass `page` and `limit` to API, use `total` from response
+- Ant Design `RangePicker` returns dayjs objects — convert with `.toISOString()` before sending to API
+- Always ensure `vite.config.ts` and `package.json` are consistent — every plugin in `vite.config.ts` must be in `package.json`
+- Always use the existing `eslint.config.js` flat config — never create `.eslintrc.cjs`
+- ESLint required plugins: `eslint-plugin-import`, `eslint-plugin-jsx-a11y`, `eslint-import-resolver-typescript`
+- Boolean props must use shorthand — `isOpen` not `isOpen={true}` (`react/jsx-boolean-value: never`)
+- Props must be sorted alphabetically — shorthand booleans first, reserved props (key/ref) first, callbacks last
+- Never use `../../` imports — maximum one level up `../` is allowed
+- Parent imports `../` must appear before sibling imports `./` in import order
+- Import groups order: builtin → external → internal → parent (`../`) → sibling (`./`) → styles
+- Always add a newline between each import group

@@ -7,7 +7,7 @@ interface TextFieldProps<T extends FieldValues> {
   name: Path<T>;
   control: Control<T>;
   label: string;
-  type?: 'text' | 'password';
+  type?: HTMLInputElement['type'];
 }
 
 const TextField = <T extends FieldValues>({

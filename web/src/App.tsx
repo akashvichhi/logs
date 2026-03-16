@@ -7,6 +7,7 @@ import NotFoundPage from "./pages/error/not_found";
 
 const Home = lazy(() => import("./pages/home/home"));
 const Login = lazy(() => import("./pages/login/login"));
+const Register = lazy(() => import("./pages/register/register"));
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
           }
         />
         <Route element={ <Login /> } path="login" />
+        <Route element={ <Register /> } path="register" />
         <Route element={ <NotFoundPage /> } path="*" />
       </Routes>
     </Suspense>

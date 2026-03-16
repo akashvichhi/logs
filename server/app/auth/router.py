@@ -14,9 +14,12 @@ router = APIRouter()
 
 @router.post("/register", response_model=schemas.UserOut)
 def register(user_in: schemas.UserCreate, db: Annotated[Session, Depends(get_db)]):
-    existing = AuthService.get_user_by_username(db, user_in.username)
-    if existing:
+    existingUsername = AuthService.get_user_by_username(db, user_in.username)
+    existingEmail = AuthService.get_user_by_email(db, user_in.email)
+    if existingUsername:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already registered")
+    if existingEmail:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
     user = AuthService.create_user(db, user_in)
     return user
 

@@ -1,5 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Button, Card, Form, Typography } from "antd";
+import { Button, Form } from "antd";
 import { useForm } from "react-hook-form";
 import * as yup from 'yup';
 
@@ -8,8 +8,6 @@ import { memo } from "react";
 
 import { TextField } from "@src/components/form";
 import { useLogin, type ILoginRequest } from "@src/services/auth";
-
-const { Title } = Typography;
 
 const schema = yup.object({
   username: yup.string().required('Username is required'),
@@ -40,20 +38,15 @@ const LoginForm = ({ afterLogin }: ILoginFormProps) => {
   };
     
   return (
-    <Card style={ { width: 400 } }>
-      <Title level={ 3 }>
-        Login
-      </Title>
-      <Form layout="vertical" onFinish={ handleSubmit(onSubmit) }>
-        <TextField<ILoginRequest> control={ control } label="Username" name="username" />
-        <TextField<ILoginRequest> control={ control } label="Password" name="password" type="password" />
-        <Form.Item>
-          <Button block htmlType="submit" loading={ loginMutation.isPending } type="primary">
-            Login
-          </Button>
-        </Form.Item>
-      </Form>
-    </Card>
+    <Form layout="vertical" onFinish={ handleSubmit(onSubmit) }>
+      <TextField<ILoginRequest> control={ control } label="Username" name="username" />
+      <TextField<ILoginRequest> control={ control } label="Password" name="password" type="password" />
+      <Form.Item>
+        <Button block htmlType="submit" loading={ loginMutation.isPending } type="primary">
+          Login
+        </Button>
+      </Form.Item>
+    </Form>
   )
 }
 

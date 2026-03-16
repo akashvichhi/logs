@@ -44,6 +44,23 @@ export const useLogin = () => {
   });
 };
 
+export interface IRegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+}
+
+const registerApi = (body: IRegisterRequest) => apiPost<IUser>(`${apiBase}/register`, body);
+
+export const useRegister = () => {
+  return useMutation({
+    mutationFn: registerApi,
+    onError:    (error) => {
+      getMessageApi().error(error.message);
+    },
+  });
+};
+
 export const useLogout = () => {
   const queryClient = useQueryClient();
   return useMutation({

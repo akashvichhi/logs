@@ -25,7 +25,7 @@ def register(user_in: schemas.UserCreate, db: Annotated[Session, Depends(get_db)
 def login(user_in: schemas.UserLogin, db: Annotated[Session, Depends(get_db)]):
     user = AuthService.authenticate_user(db, user_in.username, user_in.password)
     if not user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Incorrect username or password")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
     token = AuthService.create_access_token_for_user(user)
     return schemas.Token(access_token=token)
 

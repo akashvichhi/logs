@@ -1,0 +1,5 @@
+@use "assets/styles/variables" as variables;
+
+.login-page {
+    padding: variables.$page-spacing;
+}

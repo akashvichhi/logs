@@ -1,10 +1,10 @@
 import js from '@eslint/js'
-import react from 'eslint-plugin-react'
 import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import importPlugin from 'eslint-plugin-import'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
@@ -14,12 +14,11 @@ export default defineConfig([
     extends: [
       js.configs.recommended,
       tseslint.configs.recommended,
-      react.configs.flat.recommended,
-      react.configs.flat['jsx-runtime'],
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
       importPlugin.flatConfigs.recommended,
       importPlugin.flatConfigs.typescript,
+      jsxA11y.flatConfigs.recommended,
     ],
     languageOptions: {
       ecmaVersion: 'latest',
@@ -29,14 +28,8 @@ export default defineConfig([
       },
     },
     settings: {
-      react: {
-        version: 'detect',
-      },
       'import/resolver': {
-        typescript: {
-          alwaysTryTypes: true,
-          project: './tsconfig.json',
-        },
+        typescript: true,
         node: true,
       },
     },
@@ -48,6 +41,13 @@ export default defineConfig([
       'no-use-before-define':                    'off', // use @typescript-eslint version instead
 
       // ── Imports ───────────────────────────────────────────────────
+      'import/extensions': [
+        'error',
+        'ignorePackages',
+        { js: 'never', jsx: 'never', ts: 'never', tsx: 'never' },
+      ],
+      'import/no-extraneous-dependencies': 'off',
+      'import/prefer-default-export':      'off',
       'import/no-unresolved':              'off',
       // Disallow deep relative imports like ../../
       'import/no-relative-parent-imports': 'off', // handled by no-restricted-imports below
@@ -56,8 +56,8 @@ export default defineConfig([
         {
           patterns: [
             {
-              group:   ['../*'],
-              message: 'Relative parent imports (../) are not allowed. Use @src/* path alias instead.',
+              group:   ['../../*'],
+              message: 'Imports going more than one level up (../../) are not allowed. Restructure your code or use path aliases.',
             },
           ],
         },
@@ -65,41 +65,42 @@ export default defineConfig([
       'import/order': [
         'error',
         {
-          'groups': [
-            'builtin',    // node built-ins
-            'external',   // npm packages
-            'internal',   // @src/* aliases
-            'sibling',    // ./ imports
-            'unknown',    // css/scss (caught by pathGroups below)
-          ],
-          'pathGroups': [
-            {
-              pattern: '{react,react-dom,react-dom/client,react-router-dom}',
-              group:   'internal',
-              position: 'before',
-            },
-            {
-              pattern:  '@src/**',
-              group:    'internal',
-            },
-            {
-              pattern:  '**/*.{css,scss}',
-              group:    'unknown',
-              position: 'after',
-            },
-          ],
-          'pathGroupsExcludedImportTypes': ['react', 'react-dom', 'react-router-dom'],
-          'newlines-between': 'always',
           'alphabetize': {
             order:           'asc',
             caseInsensitive: true,
           },
+          // parent (../) appears before sibling (./) in its own group
+          'groups':           ['builtin', 'external', 'internal', 'parent', 'sibling', 'unknown'],
+          'newlines-between': 'always',
+          'pathGroups': [
+            {
+              pattern: '{react,react-dom}',
+              group:   'builtin',
+            },
+            {
+              pattern:  '@src/!(components)/**/!(*.scss|*.css)',
+              group:    'internal',
+            },
+            {
+              pattern:  '@src/components/**/!(*.scss|*.css)',
+              group:    'internal',
+              position: 'after',
+            },
+            {
+              pattern:  '**/*.{scss,css}',
+              group:    'object',
+              position: 'after',
+            },
+          ],
+          'pathGroupsExcludedImportTypes': ['{react,react-dom}'],
+          'warnOnUnassignedImports':       true,
         },
       ],
 
       // ── React ─────────────────────────────────────────────────────
       'react/function-component-definition': ['error', { namedComponents: 'arrow-function' }],
       'react/jsx-curly-spacing':             ['error', { when: 'always' }],
+      'react/jsx-filename-extension':        ['error', { extensions: ['.jsx', '.tsx'] }],
       'react/jsx-props-no-spreading':        'off',
       // Enforce boolean props shorthand: use isOpen instead of isOpen={true}
       'react/jsx-boolean-value':             ['error', 'never'],
@@ -122,6 +123,12 @@ export default defineConfig([
       'react/require-default-props': 'off',
       'react-hooks/exhaustive-deps': ['warn'],
 
+      // ── jsx-a11y ──────────────────────────────────────────────────
+      'jsx-a11y/anchor-is-valid':                        'off',
+      'jsx-a11y/click-events-have-key-events':           'off',
+      'jsx-a11y/label-has-associated-control':           ['error', { assert: 'either' }],
+      'jsx-a11y/no-noninteractive-element-interactions': 'off',
+
       // ── General ───────────────────────────────────────────────────
       'arrow-body-style':     'off',
       'key-spacing':          ['error', { align: 'value' }],
@@ -133,7 +140,6 @@ export default defineConfig([
       'quote-props':          ['error', 'consistent-as-needed'],
       'max-len':              ['error', { code: 120 }],
       'linebreak-style':      ['error', 'unix'],
-      'indent':               ['error', 2],
     },
   },
 ])

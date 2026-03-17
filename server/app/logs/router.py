@@ -12,7 +12,6 @@ from app.logs.service import LogService
 
 router = APIRouter()
 
-
 @router.post("/ingest", response_model=LogOut)
 def ingest_log(
     payload: LogIngest,
@@ -21,7 +20,6 @@ def ingest_log(
 ):
     return LogService.ingest_log(db, owner, payload)
 
-
 @router.get("/search", response_model=LogSearchResponse)
 def search_logs(
     params: Annotated[LogSearchParams, Depends()],
@@ -29,4 +27,3 @@ def search_logs(
     db: Annotated[Session, Depends(get_db)],
 ):
     return LogService.search_logs(db, current_user, params)
-

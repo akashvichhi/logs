@@ -6,7 +6,6 @@ from sqlalchemy.sql import func
 
 from app.core.database import Base
 
-
 class APIKey(Base):
     __tablename__ = "api_keys"
 
@@ -25,4 +24,3 @@ class APIKey(Base):
         Index("ix_api_keys_prefix", "prefix"),
         Index("ix_api_keys_user_id", "user_id"),
     )
-

@@ -11,7 +11,6 @@ from app.core.database import get_db
 
 router = APIRouter()
 
-
 @router.post("/register", response_model=schemas.UserOut)
 def register(user_in: schemas.UserCreate, db: Annotated[Session, Depends(get_db)]):
     existingUsername = AuthService.get_user_by_username(db, user_in.username)

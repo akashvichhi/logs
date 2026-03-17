@@ -9,7 +9,6 @@ from app.core.config import settings
 from app.core.security import create_access_token, get_password_hash, verify_password
 from app.core.database import SessionLocal
 
-
 class AuthService:
     @staticmethod
     def get_user_by_username(db: Session, username: str) -> Optional[User]:

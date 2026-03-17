@@ -2,7 +2,6 @@ from datetime import datetime
 
 from pydantic import BaseModel, EmailStr
 
-
 class UserBase(BaseModel):
     username: str
     email: EmailStr
@@ -25,4 +24,3 @@ class UserOut(UserBase):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
-

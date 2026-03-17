@@ -57,4 +57,3 @@ app.include_router(api_router)
 @app.get("/")
 def root() -> dict:
     return {"status": "ok"}
-

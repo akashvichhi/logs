@@ -10,7 +10,6 @@ down_revision: Union[str, None] = "001_create_users_table"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-
 def upgrade() -> None:
     op.create_table(
         "api_keys",
@@ -40,4 +39,3 @@ def downgrade() -> None:
     op.drop_index("ix_api_keys_user_id", table_name="api_keys")
     op.drop_index("ix_api_keys_prefix", table_name="api_keys")
     op.drop_table("api_keys")
-

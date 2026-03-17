@@ -4,7 +4,6 @@ from urllib.parse import quote_plus
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-
 class Settings(BaseSettings):
     postgres_user: str = Field(..., alias="POSTGRES_USER")
     postgres_password: str = Field(..., alias="POSTGRES_PASSWORD")
@@ -31,11 +30,8 @@ class Settings(BaseSettings):
     class Config:
         extra = "ignore"
 
-
 @lru_cache
 def get_settings() -> Settings:
     return Settings()  # type: ignore[arg-type]
 
-
 settings = get_settings()
-

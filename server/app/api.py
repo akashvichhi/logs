@@ -9,4 +9,3 @@ api_router = APIRouter(prefix="/api/v1")
 api_router.include_router(auth_router, prefix="/auth", tags=["auth"])
 api_router.include_router(api_keys_router, prefix="/api-keys", tags=["api-keys"])
 api_router.include_router(logs_router, prefix="/logs", tags=["logs"])
-

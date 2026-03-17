@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { getMessageApi } from '@src/lib/ant_message';
+import { getMessageApi } from '@src/utils/ant_message';
 import type { IUser } from '@src/types/user';
 import { clearToken, setToken, TOKEN_KEY } from '@src/utils/token';
 

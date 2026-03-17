@@ -6,7 +6,6 @@ from sqlalchemy.sql import func
 
 from app.core.database import Base
 
-
 class Log(Base):
     __tablename__ = "logs"
 
@@ -25,4 +24,3 @@ class Log(Base):
         Index("ix_logs_level", "level"),
         Index("ix_logs_service", "service"),
     )
-

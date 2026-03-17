@@ -3,10 +3,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-
 class APIKeyCreate(BaseModel):
     name: str
-
 
 class APIKeyOut(BaseModel):
     id: int
@@ -19,7 +17,5 @@ class APIKeyOut(BaseModel):
     class Config:
         from_attributes = True
 
-
 class APIKeyWithSecret(APIKeyOut):
     full_key: str
-

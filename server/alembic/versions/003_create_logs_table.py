@@ -10,7 +10,6 @@ down_revision: Union[str, None] = "002_create_api_keys_table"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
-
 def upgrade() -> None:
     # Ensure pg_trgm extension exists for GIN index on text column
     op.execute("CREATE EXTENSION IF NOT EXISTS pg_trgm")
@@ -50,7 +49,6 @@ def upgrade() -> None:
     )
     op.create_index("ix_logs_metadata_gin", "logs", ["metadata"], postgresql_using="gin")
 
-
 def downgrade() -> None:
     op.drop_index("ix_logs_metadata_gin", table_name="logs")
     op.drop_index("ix_logs_message_gin", table_name="logs")
@@ -59,4 +57,3 @@ def downgrade() -> None:
     op.drop_index("ix_logs_timestamp", table_name="logs")
     op.drop_index("ix_logs_user_id", table_name="logs")
     op.drop_table("logs")
-

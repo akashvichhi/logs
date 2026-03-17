@@ -8,7 +8,6 @@ from app.auth.models import User
 from app.logs.models import Log
 from app.logs.schemas import LogIngest, LogOut, LogSearchParams, LogSearchResponse
 
-
 class LogService:
     @staticmethod
     def _normalize_level(level: str | None) -> str | None:
@@ -96,4 +95,3 @@ class LogService:
         results: List[LogOut] = [LogOut.model_validate(item) for item in items]  # type: ignore[arg-type]
 
         return LogSearchResponse(total=total, page=page, limit=limit, results=results)
-

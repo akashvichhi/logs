@@ -7,7 +7,6 @@ from app.api_keys.service import APIKeyService
 from app.auth.models import User
 from app.core.database import get_db
 
-
 def get_user_by_api_key(
     x_api_key: Annotated[str | None, Header(alias="X-API-Key")] = None,
     db: Session = Depends(get_db),
@@ -20,4 +19,3 @@ def get_user_by_api_key(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid API key")
 
     return user
-

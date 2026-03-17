@@ -11,7 +11,6 @@ from app.core.database import get_db
 
 router = APIRouter()
 
-
 @router.post("", response_model=APIKeyWithSecret)
 def create_api_key(
     data: APIKeyCreate,
@@ -20,14 +19,12 @@ def create_api_key(
 ):
     return APIKeyService.create_api_key(db, current_user, data)
 
-
 @router.get("", response_model=List[APIKeyOut])
 def list_api_keys(
     current_user: Annotated[User, Depends(get_current_user)],
     db: Annotated[Session, Depends(get_db)],
 ):
     return APIKeyService.list_api_keys(db, current_user)
-
 
 @router.delete("/{api_key_id}", status_code=204)
 def revoke_api_key(
@@ -37,4 +34,3 @@ def revoke_api_key(
 ):
     APIKeyService.revoke_api_key(db, current_user, api_key_id)
     return None
-

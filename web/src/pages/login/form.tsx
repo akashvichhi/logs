@@ -40,7 +40,7 @@ const LoginForm = ({ afterLogin }: ILoginFormProps) => {
   return (
     <Form layout="vertical" onFinish={ handleSubmit(onSubmit) }>
       <TextField<ILoginRequest> control={ control } label="Username" name="username" />
-      <TextField<ILoginRequest> control={ control } label="Password" name="password" type="password" />
+      <TextField<ILoginRequest> isPassword control={ control } label="Password" name="password" type="password" />
       <Form.Item>
         <Button block htmlType="submit" loading={ loginMutation.isPending } type="primary">
           Login

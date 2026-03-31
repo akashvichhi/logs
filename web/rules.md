@@ -23,6 +23,7 @@ src/
       hooks.ts       # Module-level business logic hooks
       module.tsx     # Pure UI / Layout logic
       form.tsx       # Form-specific UI
+      table.tsx      # Table-specific UI
       styles.module.scss
       index.ts       # Barrel export
   services/          # API calls and react-query hooks

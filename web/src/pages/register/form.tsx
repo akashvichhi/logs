@@ -42,7 +42,7 @@ const RegisterForm = ({ afterRegister }: IRegisterFormProps) => {
     <Form layout="vertical" onFinish={ handleSubmit(onSubmit) }>
       <TextField<IRegisterRequest> control={ control } label="Username" name="username" />
       <TextField<IRegisterRequest> control={ control } label="Email" name="email" type="email" />
-      <TextField<IRegisterRequest> control={ control } label="Password" name="password" type="password" />
+      <TextField<IRegisterRequest> isPassword control={ control } label="Password" name="password" type="password" />
       <Form.Item>
         <Button block htmlType="submit" loading={ registerMutation.isPending } type="primary">
         Register

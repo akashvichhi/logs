@@ -8,6 +8,7 @@ interface TextFieldProps<T extends FieldValues> {
   control: Control<T>;
   label: string;
   type?: HTMLInputElement['type'];
+  isPassword?: boolean;
 }
 
 const TextField = <T extends FieldValues>({
@@ -15,6 +16,7 @@ const TextField = <T extends FieldValues>({
   control,
   label,
   type = 'text',
+  isPassword = false,
 }: TextFieldProps<T>) => (
     <Controller
       control={ control }
@@ -25,7 +27,10 @@ const TextField = <T extends FieldValues>({
           label={ label }
           validateStatus={ fieldState.error ? 'error' : '' }
         >
-          <Input { ...field } type={ type } />
+          {isPassword
+            ? <Input.Password { ...field } />
+            : <Input { ...field } type={ type } />
+          }
         </Form.Item>
       ) }
     />

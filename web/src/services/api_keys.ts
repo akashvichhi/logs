@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { getMessageApi } from '@src/utils/ant_message';
 import type { IApiKey, IApiKeyWithSecret } from '@src/types/api_key';
+import { getMessageApi } from '@src/utils/ant_message';
 
 import { apiDelete, apiGet, apiPost } from './axios';
 

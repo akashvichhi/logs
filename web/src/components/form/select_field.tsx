@@ -31,5 +31,4 @@ const SelectField = <T extends FieldValues>({
     />
   );
 
-const MemoizedSelectField = memo(SelectField);
-export default MemoizedSelectField as typeof SelectField;
+export default memo(SelectField)

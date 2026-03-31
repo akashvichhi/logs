@@ -35,5 +35,4 @@ const Register = () => {
   )
 }
 
-const MemoizedRegister = memo(Register);
-export default MemoizedRegister;
+export default memo(Register)

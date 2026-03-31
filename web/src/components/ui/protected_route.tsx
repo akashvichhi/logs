@@ -24,6 +24,5 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   return <>{children}</>;
 };
 
-const MemoizedProtectedRoute = memo(ProtectedRoute);
-export default MemoizedProtectedRoute;
+export default memo(ProtectedRoute)
 

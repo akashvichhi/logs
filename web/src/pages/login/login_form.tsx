@@ -50,5 +50,4 @@ const LoginForm = ({ afterLogin }: ILoginFormProps) => {
   )
 }
 
-const MemoizedLoginForm = memo(LoginForm);
-export default MemoizedLoginForm as typeof LoginForm;
+export default memo(LoginForm)

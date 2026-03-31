@@ -14,5 +14,4 @@ const AppInitializer = () => {
   return null;
 }
 
-const MemoizedAppInitializer = memo(AppInitializer);
-export default MemoizedAppInitializer;
+export default memo(AppInitializer)

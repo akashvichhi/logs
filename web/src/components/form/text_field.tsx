@@ -31,5 +31,4 @@ const TextField = <T extends FieldValues>({
     />
   );
 
-const MemoizedTextField = memo(TextField);
-export default MemoizedTextField as typeof TextField;
+export default memo(TextField)

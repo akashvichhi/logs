@@ -52,5 +52,4 @@ const RegisterForm = ({ afterRegister }: IRegisterFormProps) => {
   )
 }
 
-const MemoizedRegisterForm = memo(RegisterForm);
-export default MemoizedRegisterForm as typeof RegisterForm;
+export default memo(RegisterForm)

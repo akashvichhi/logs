@@ -11,5 +11,4 @@ const Loader = () => {
   )
 }
 
-const MemoizedLoader = memo(Loader);
-export default MemoizedLoader;
+export default memo(Loader)

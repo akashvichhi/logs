@@ -27,5 +27,4 @@ const Home = () => {
   )
 }
 
-const MemoizedHome = memo(Home);
-export default MemoizedHome;
+export default memo(Home)

@@ -25,5 +25,4 @@ const NavButton = ({ to, ...props }: NavButtonProps) => {
   )
 }
 
-const MemoizedNavButton = memo(NavButton);
-export default MemoizedNavButton
+export default memo(NavButton)

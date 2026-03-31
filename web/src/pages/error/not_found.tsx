@@ -17,5 +17,4 @@ const NotFound = () => {
   )
 }
 
-const MemoizedNotFound = memo(NotFound);
-export default MemoizedNotFound;
+export default memo(NotFound)

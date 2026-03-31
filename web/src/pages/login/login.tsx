@@ -35,5 +35,4 @@ const Login = () => {
   )
 }
 
-const MemoizedLogin = memo(Login);
-export default MemoizedLogin;
+export default memo(Login)

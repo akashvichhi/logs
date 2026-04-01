@@ -20,10 +20,10 @@ src/
   hooks/             # Common and shared global hooks
   pages/             # One folder per route/module
     module_name/
-      hooks.ts       # Module-level business logic hooks
-      module.tsx     # Pure UI / Layout logic
-      form.tsx       # Form-specific UI
-      table.tsx      # Table-specific UI
+      hooks.ts       # Complex business logic and shared module state (if needed)
+      module.tsx     # Main page wrapper (Layout, Page Header, composes Table/Form)
+      table.tsx      # Ant Design Table component (receives data via props)
+      form.tsx       # Form component (react-hook-form + mutations)
       styles.module.scss
       index.ts       # Barrel export
   services/          # API calls and react-query hooks
@@ -46,6 +46,8 @@ src/
   ```
 * **React 19 Refs:** Do **not** use `forwardRef`. In React 19, pass `ref` as a standard prop to function components.
 * **Navigation:** Always use the custom `NavButton` component for internal links. Never use `<a>` or react-router's `<Link>` directly. Use `ROUTES.*` constants for paths.
+* **Smart Containers vs. Dumb Presentational Components:** * Page wrappers (e.g., `module.tsx`) act as "Smart Containers." They are responsible for calling `useQuery` hooks to fetch list data and passing it down.
+* UI components like `table.tsx` must be "Dumb Presentational Components." They should never fetch their own data; they must accept `data` and `isLoading` states purely via props.
 
 ---
 
@@ -55,6 +57,8 @@ src/
   * **Global/Shared:** Place hooks used across multiple modules in `src/hooks/`.
   * **Module-Specific:** Place logic specific to a single page/feature in `src/pages/[module_name]/hooks.ts`.
 * **Single Responsibility:** If a custom hook becomes too large or handles multiple disparate concerns, break it down into smaller, composable hooks.
+* **The Form Exception:** Simple form wiring (initializing `useForm`, defining `defaultValues`, and calling a React Query mutation on submit) is considered UI/API glue, not business logic. This code should live directly inside `form.tsx`.
+* **When to use `hooks.ts`:** Extract logic to `hooks.ts` only when dealing with complex derived state, multi-step wizards, heavy data transformations before/after API calls, or shared state needed by multiple components on the page.
 
 ```tsx
 // Example: src/pages/dashboard/dashboard.tsx
@@ -84,6 +88,7 @@ export default memo(Dashboard)
 * **Exports:** Only export React Query custom hooks (e.g., `useLoginMutation`, `useUserProfile`).
 * **Error Handling:** Handle API errors globally or within the mutation's `onError` callback using the custom message utility: `getMessageApi().error(error.message)`.
 * **Data Transformation:** Rely on the configured axios instance to automatically handle camelCase (frontend) to snake_case (backend) conversions.
+* **Query Invalidation:** Always invalidate the relevant useQuery cache inside the onSuccess callback of a mutation to ensure the UI stays up-to-date (e.g., queryClient.invalidateQueries({ queryKey: ['api-keys'] })).
 
 ---
 

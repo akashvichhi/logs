@@ -1,32 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 
-import type { LogEntry } from '@src/types/log';
+import type { ILogsSearchParams, ILogsSearchResponse } from '@src/types/log';
 
 import { apiGet } from './axios';
 
-export interface LogsSearchResponse {
-  total: number;
-  page: number;
-  limit: number;
-  results: LogEntry[];
-}
+const QUERY_KEY = 'logs';
 
-export interface LogsSearchParams {
-  query?: string;
-  from?: string;
-  to?: string;
-  level?: string;
-  service?: string;
-  page?: number;
-  limit?: number;
-}
+// Private request function — never exported
+const getLogs = (params: ILogsSearchParams): Promise<ILogsSearchResponse> =>
+  apiGet<ILogsSearchResponse>('/api/v1/logs/search', params);
 
-export const searchLogs = (params: LogsSearchParams) =>
-  apiGet<LogsSearchResponse>('/api/v1/logs/search', params);
-
-export const useLogs = (params: LogsSearchParams) =>
+// Exported React Query hook
+export const useGetLogs = (params: ILogsSearchParams) =>
   useQuery({
-    queryKey: ['logs', params],
-    queryFn:  () => searchLogs(params),
+    queryKey:             [QUERY_KEY, params],
+    queryFn:              () => getLogs(params),
+    refetchOnWindowFocus: 'always',
   });
-

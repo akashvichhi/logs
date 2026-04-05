@@ -1,17 +1,19 @@
-import { App } from 'antd'
+import { App } from 'antd';
 
-import { memo, useEffect } from 'react'
+import { memo, useEffect } from 'react';
 
-import { setMessageApi } from '@src/utils/ant_message'
+import { setMessageApi } from '@src/utils/ant_message';
+import { setModalApi } from '@src/utils/ant_modal';
 
 const AppInitializer = () => {
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
 
   useEffect(() => {
     setMessageApi(message);
-  }, [message]);
+    setModalApi(modal);
+  }, [message, modal]);
 
   return null;
-}
+};
 
-export default memo(AppInitializer)
+export default memo(AppInitializer);

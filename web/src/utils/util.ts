@@ -1,25 +1,25 @@
 type SnakeToCamel<S extends string> =
   S extends `${infer Head}_${infer Tail}`
-    ? `${Head}${Capitalize<SnakeToCamel<Tail>>}`
-    : S
+  ? `${Head}${Capitalize<SnakeToCamel<Tail>>}`
+  : S
 
 type CamelToSnake<S extends string> =
   S extends `${infer Head}${infer Tail}`
-    ? Tail extends Uncapitalize<Tail>
-      ? `${Uncapitalize<Head>}${CamelToSnake<Tail>}`
-      : `${Uncapitalize<Head>}_${CamelToSnake<Tail>}`
-    : S
+  ? Tail extends Uncapitalize<Tail>
+  ? `${Uncapitalize<Head>}${CamelToSnake<Tail>}`
+  : `${Uncapitalize<Head>}_${CamelToSnake<Tail>}`
+  : S
 
 type SnakeToCamelObject<T> = {
   [K in keyof T as SnakeToCamel<string & K>]: T[K] extends object
-    ? SnakeToCamelObject<T[K]>
-    : T[K]
+  ? SnakeToCamelObject<T[K]>
+  : T[K]
 }
 
 type CamelToSnakeObject<T> = {
   [K in keyof T as CamelToSnake<string & K>]: T[K] extends object
-    ? CamelToSnakeObject<T[K]>
-    : T[K]
+  ? CamelToSnakeObject<T[K]>
+  : T[K]
 }
 
 // ── String converters ─────────────────────────────────────────────────────────

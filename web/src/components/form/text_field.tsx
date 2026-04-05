@@ -4,20 +4,24 @@ import { Controller, type Control, type FieldValues, type Path } from 'react-hoo
 import { memo } from 'react';
 
 interface TextFieldProps<T extends FieldValues> {
-  name: Path<T>;
-  control: Control<T>;
-  label: string;
-  type?: HTMLInputElement['type'];
+  name:        Path<T>;
+  control:     Control<T>;
+  label:       string;
+  type?:       HTMLInputElement['type'];
   isPassword?: boolean;
 }
 
+// Generic arrow function components lose their generic when wrapped in memo().
+// Re-asserting the generic signature on the memoized result preserves JSX
+// generic call syntax (<TextField<MyForm> .../>) without unsafe casts at call-sites.
 const TextField = <T extends FieldValues>({
   name,
   control,
   label,
   type = 'text',
   isPassword = false,
-}: TextFieldProps<T>) => (
+}: TextFieldProps<T>) => {
+  return (
     <Controller
       control={ control }
       name={ name }
@@ -27,7 +31,7 @@ const TextField = <T extends FieldValues>({
           label={ label }
           validateStatus={ fieldState.error ? 'error' : '' }
         >
-          {isPassword
+          { isPassword
             ? <Input.Password { ...field } />
             : <Input { ...field } type={ type } />
           }
@@ -35,5 +39,7 @@ const TextField = <T extends FieldValues>({
       ) }
     />
   );
+}
 
-export default memo(TextField)
+// memo() preserves the generic on function declarations (unlike arrow functions).
+export default memo(TextField) as typeof TextField;

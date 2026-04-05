@@ -5,29 +5,32 @@ import { getMessageApi } from '@src/utils/ant_message';
 
 import { apiDelete, apiGet, apiPost } from './axios';
 
-const apiBase = '/api/v1/api-keys';
-const queryKey = 'api-keys';
+const API_BASE  = '/api/v1/api-keys';
+const QUERY_KEY = 'api-keys';
 
-const listApiKeys = () => apiGet<IApiKey[]>(apiBase);
+// Private request functions — never exported
+const getApiKeys = (): Promise<IApiKey[]> =>
+  apiGet<IApiKey[]>(API_BASE);
 
-const createApiKeyApi = (name: string) =>
-  apiPost<IApiKeyWithSecret>(apiBase, { name });
+const createApiKey = (name: string): Promise<IApiKeyWithSecret> =>
+  apiPost<IApiKeyWithSecret>(API_BASE, { name });
 
-const revokeApiKeyApi = (id: number) =>
-  apiDelete<void>(`${apiBase}/${id}`);
+const revokeApiKey = (id: number): Promise<void> =>
+  apiDelete<void>(`${API_BASE}/${id}`);
 
-export const useApiKeys = () =>
+// Exported React Query hooks
+export const useGetApiKeys = () =>
   useQuery({
-    queryKey: [queryKey],
-    queryFn:  listApiKeys,
+    queryKey: [QUERY_KEY],
+    queryFn:  getApiKeys,
   });
 
 export const useCreateApiKey = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: createApiKeyApi,
+    mutationFn: createApiKey,
     onSuccess:  () => {
-      queryClient.invalidateQueries({ queryKey: [queryKey] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
     },
     onError: (error) => {
       getMessageApi().error(error.message);
@@ -38,13 +41,12 @@ export const useCreateApiKey = () => {
 export const useRevokeApiKey = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: revokeApiKeyApi,
+    mutationFn: revokeApiKey,
     onSuccess:  () => {
-      queryClient.invalidateQueries({ queryKey: [queryKey] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_KEY] });
     },
     onError: (error) => {
       getMessageApi().error(error.message);
     },
   });
 };
-

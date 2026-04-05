@@ -1,19 +1,18 @@
 import { useEffect, useState } from 'react';
 
 /**
- * Delays the updating of a value until after the specified delay has passed
- * without the value changing.
+ * Delays propagating a value until the specified delay has elapsed without
+ * the value changing. Useful for deferring expensive operations (e.g. API
+ * calls) triggered by rapid user input.
  */
 export const useDebounce = <T>(value: T, delay: number): T => {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   useEffect(() => {
-    // Set a timer to update the debounced state
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
 
-    // Cancel the timer if value changes (user keeps typing) or component unmounts
     return () => {
       clearTimeout(handler);
     };

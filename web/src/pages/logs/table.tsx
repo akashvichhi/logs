@@ -1,17 +1,20 @@
-import { Table, Tag, Typography } from 'antd';
+import { Table, Tag, Typography, Popover } from 'antd';
 import type { TableColumnsType } from 'antd';
 
 import { memo, useMemo } from 'react';
 
 import type { ILogEntry, TLogLevel } from '@src/types/log';
 
+import { DEFAULT_PAGE_SIZE } from './constants';
+import styles from "./styles.module.scss";
 import { formatLogTimestamp, getLevelColor } from './utils';
 
+
 interface ILogsTableProps {
-  data:         ILogEntry[];
-  isLoading:    boolean;
-  total:        number;
-  page:         number;
+  data: ILogEntry[];
+  isLoading: boolean;
+  total: number;
+  page: number;
   onPageChange: (page: number) => void;
 }
 
@@ -30,7 +33,7 @@ const LogsTable = ({
       width:     200,
       render:    (ts: string) => (
         <Typography.Text type="secondary">
-          { formatLogTimestamp(ts) }
+          {formatLogTimestamp(ts)}
         </Typography.Text>
       ),
     },
@@ -41,7 +44,7 @@ const LogsTable = ({
       width:     90,
       render:    (level: TLogLevel | null) =>
         level
-          ? <Tag color={ getLevelColor(level) }>{ level }</Tag>
+          ? <Tag color={ getLevelColor(level) }>{level}</Tag>
           : <Typography.Text type="secondary">—</Typography.Text>,
     },
     {
@@ -50,7 +53,7 @@ const LogsTable = ({
       key:       'service',
       width:     150,
       render:    (service: string | null) => (
-        <Typography.Text code>{ service ?? '—' }</Typography.Text>
+        <Typography.Text code>{service ?? '—'}</Typography.Text>
       ),
     },
     {
@@ -59,7 +62,11 @@ const LogsTable = ({
       key:       'message',
       ellipsis:  true,
       render:    (message: string) => (
-        <Typography.Text>{ message }</Typography.Text>
+        <Typography.Text>
+          <Popover classNames={ { content: styles['message-popover'] } } content={ message } placement='topLeft'>
+            {message}
+          </Popover>
+        </Typography.Text>
       ),
     },
   ], []);
@@ -77,7 +84,7 @@ const LogsTable = ({
       return (
         <Typography>
           <pre>
-            <code>{ JSON.stringify(meta, null, 2) }</code>
+            <code>{JSON.stringify(meta, null, 2)}</code>
           </pre>
         </Typography>
       );
@@ -87,7 +94,7 @@ const LogsTable = ({
 
   const pagination = useMemo(() => ({
     current:         page,
-    pageSize:        50,
+    pageSize:        DEFAULT_PAGE_SIZE,
     total,
     onChange:        onPageChange,
     showSizeChanger: false,

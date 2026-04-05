@@ -1,6 +1,6 @@
 import type { DefaultOptionType } from "antd/es/select";
 
-export const DEFAULT_PAGE_SIZE = 50;
+export const DEFAULT_PAGE_SIZE = 10;
 
 export const LOG_LEVEL_OPTIONS: DefaultOptionType[] = [
   { label: 'All Levels', value: '' },

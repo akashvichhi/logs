@@ -39,7 +39,6 @@ const LogsFilters = ({ filters, onFilterChange, onReset }: ILogsFiltersProps) =>
     }
   }, [debouncedService, filters.service, onFilterChange]);
 
-  // 4. HANDLERS (Now incredibly simple)
   const handleQueryChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalQuery(e.target.value);
   }, []);
@@ -56,6 +55,12 @@ const LogsFilters = ({ filters, onFilterChange, onReset }: ILogsFiltersProps) =>
     onFilterChange('level', v ?? '');
   }, [onFilterChange]);
 
+  const handleReset = useCallback(() => {
+    setLocalQuery('');
+    setLocalService('');
+    onReset();
+  }, [onReset]);
+
   return (
     <Flex gap="small" wrap="wrap">
       <Input.Search
@@ -65,14 +70,12 @@ const LogsFilters = ({ filters, onFilterChange, onReset }: ILogsFiltersProps) =>
         placeholder="Search message…"
         value={ localQuery }
         onChange={ handleQueryChange }
-        onSearch={ (val) => onFilterChange('query', val) } // Bypass debounce on enter
+        onSearch={ (val) => onFilterChange('query', val) }
       />
 
-      {/* ... (Other inputs remain exactly the same) */}
       <DatePicker.RangePicker
         allowEmpty
         showTime
-        needConfirm={ false }
         value={ filters.dateRange }
         onChange={ handleRangeChange }
       />
@@ -94,7 +97,7 @@ const LogsFilters = ({ filters, onFilterChange, onReset }: ILogsFiltersProps) =>
         onChange={ handleServiceChange }
       />
 
-      <Button icon={ <ReloadOutlined /> } onClick={ onReset }>
+      <Button icon={ <ReloadOutlined /> } onClick={ handleReset }>
         Reset
       </Button>
     </Flex>

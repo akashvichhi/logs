@@ -28,7 +28,7 @@ class LogService:
             level=level,
             service=data.service,
             message=data.message,
-            metadata=data.metadata,
+            extra=data.metadata,
             timestamp=timestamp,
         )
         db.add(log)
@@ -44,7 +44,7 @@ class LogService:
             filters.append(Log.level == LogService._normalize_level(params.level))
 
         if params.service:
-            filters.append(Log.service == params.service)
+            filters.append(Log.service.ilike(f"%{params.service}%"))
 
         if params.from_:
             filters.append(Log.timestamp >= params.from_)

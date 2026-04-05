@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 class LogIngest(BaseModel):
     level: Optional[str] = None
@@ -11,16 +11,18 @@ class LogIngest(BaseModel):
     timestamp: Optional[datetime] = None
 
 class LogOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     timestamp: datetime
     level: Optional[str] = None
     service: Optional[str] = None
     message: str
-    metadata: Optional[Dict[str, Any]] = None
+    # The ORM attribute is named `extra` (metadata is reserved by SQLAlchemy).
+    # validation_alias makes Pydantic read `log.extra` when validating from ORM
+    # objects, while the serialised JSON field name remains `metadata`.
+    metadata: Optional[Dict[str, Any]] = Field(default=None, validation_alias="extra")
     created_at: datetime
-
-    class Config:
-        from_attributes = True
 
 class LogSearchParams(BaseModel):
     query: Optional[str] = None

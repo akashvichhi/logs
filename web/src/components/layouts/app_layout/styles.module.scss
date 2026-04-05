@@ -1,5 +1,13 @@
+@use "assets/styles/variables" as variables;
+
 .layout {
-  min-height: 100vh;
+  height: 100vh;
+
+  .content {
+    background-color: variables.$bg-color;
+    padding: variables.$page-spacing;
+    overflow: auto;
+  }
 
   .layout-sider :global(.ant-layout-sider-children) {
     display: flex;
@@ -29,9 +37,4 @@
       display: none;
     }
   }
-}
-
-.content {
-  padding: 24px;
-  overflow: auto;
 }

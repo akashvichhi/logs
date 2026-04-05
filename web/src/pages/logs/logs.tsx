@@ -43,20 +43,22 @@ const LogsModule = () => {
         </Typography.Text>
       </Flex>
 
-      <LogsFilters
-        filters={ filters }
-        onFilterChange={ handleFilterChange }
-        onReset={ handleReset }
-      />
+      <Flex vertical gap="small">
+        <LogsFilters
+          filters={ filters }
+          onFilterChange={ handleFilterChange }
+          onReset={ handleReset }
+        />
 
-      <LogsTable
-        data={ data?.results ?? [] }
-        isLoading={ isLoading }
-        page={ filters.page }
-        total={ data?.total ?? 0 }
-        onPageChange={ handlePageChange }
-      />
-    </Flex>
+        <LogsTable
+          data={ data?.results ?? [] }
+          isLoading={ isLoading }
+          page={ filters.page }
+          total={ data?.total ?? 0 }
+          onPageChange={ handlePageChange }
+        />
+      </Flex>
+    </Flex >
   );
 };
 

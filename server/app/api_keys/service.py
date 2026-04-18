@@ -57,8 +57,7 @@ class APIKeyService:
         api_key = db.query(APIKey).filter(APIKey.id == api_key_id, APIKey.user_id == user.id).first()
         if api_key is None:
             return
-        api_key.is_active = False
-        db.add(api_key)
+        db.delete(api_key)
         db.commit()
 
     @staticmethod

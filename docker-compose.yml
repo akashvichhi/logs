@@ -61,6 +61,29 @@ services:
       - server
     networks:
       - logs_network
+  
+  db_backup:
+    image: prodrigestivill/postgres-backup-local
+    container_name: db_backup
+    restart: always
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      TZ: Asia/Kolkata
+      # Runs at 11:00 PM
+      SCHEDULE: '0 23 * * *'
+      # Automatically delete backups older than 30 days to save space
+      BACKUP_KEEP_DAYS: 30
+    volumes:
+      # Maps the backups to a folder on your host machine
+      - ./db_backups:/backups
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - logs_network
 
 volumes:
   postgres_data:

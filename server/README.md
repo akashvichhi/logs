@@ -60,3 +60,36 @@ docker compose exec server alembic downgrade <revision_id>
 ```bash
 docker compose exec server alembic downgrade base
 ```
+
+## PostgreSQL Database Backup & Restore Guide
+
+This project includes a fully automated Dockerized backup system for the PostgreSQL database using the `prodrigestivill/postgres-backup-local` image. 
+
+Backups are automatically saved to the `./db_backups` folder on the host machine.
+
+---
+
+## 🕒 Automated Schedule (Cron)
+
+The automated backup is configured to run daily at **11:00 PM IST**. 
+
+This is controlled by the following environment variables in the `docker-compose.yml` file under the `db_backup` service:
+- `SCHEDULE: '0 23 * * *'` (Runs at 23:00 / 11:00 PM)
+- `TZ: Asia/Kolkata` (Forces the container to use India Standard Time instead of UTC)
+- `BACKUP_KEEP_DAYS: 30` (Automatically deletes backups older than 30 days to save disk space)
+
+---
+
+## 💾 How to Run a Manual Backup
+
+If you need to trigger a backup immediately without waiting for the scheduled 11:00 PM run, you can execute the backup script manually inside the running container.
+
+**For Linux, Mac, or Windows PowerShell:**
+```bash
+docker exec db_backup /backup.sh
+```
+
+## ♻️ Restore a Backup
+```bash
+docker exec -i postgres psql -U <YOUR_POSTGRES_USER> -d <YOUR_POSTGRES_DB> < backup.sql
+```

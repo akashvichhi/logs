@@ -4,7 +4,7 @@ import type { IUser } from '@src/types/user';
 import { getMessageApi } from '@src/utils/ant_message';
 import { clearToken, setToken, TOKEN_KEY } from '@src/utils/token';
 
-import { apiGet, apiPost } from './axios';
+import { apiGet, apiPost, apiPatch } from './axios';
 
 const apiBase = '/api/v1/auth';
 const queryKey = 'me';
@@ -19,8 +19,19 @@ export interface ITokenResponse {
   tokenType: string;
 }
 
+export interface IChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}
+
+export interface IChangePasswordResponse {
+  message: string;
+}
+
 const loginApi = (body: ILoginRequest) => apiPost<ITokenResponse>(`${apiBase}/login`, body);
 const getMe = () => apiGet<IUser>(`${apiBase}/me`);
+const changePasswordApi = (body: IChangePasswordRequest) =>
+  apiPatch<IChangePasswordResponse>(`${apiBase}/me/password`, body);
 
 export const useCurrentUser = () =>
   useQuery({
@@ -72,3 +83,14 @@ export const useLogout = () => {
   });
 };
 
+export const useChangePassword = () => {
+  return useMutation({
+    mutationFn: changePasswordApi,
+    onSuccess:  (data: IChangePasswordResponse) => {
+      getMessageApi().success(data.message);
+    },
+    onError: (error) => {
+      getMessageApi().error(error.message);
+    },
+  });
+};

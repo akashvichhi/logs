@@ -54,6 +54,11 @@ export const apiPut = async <T>(url: string, body?: object): Promise<T> => {
   return response.data;
 };
 
+export const apiPatch = async <T>(url: string, body?: object): Promise<T> => {
+  const response = await instance.patch<T>(url, body);
+  return response.data;
+};
+
 export const apiDelete = async <T>(url: string): Promise<T> => {
   const response = await instance.delete<T>(url);
   return response.data;

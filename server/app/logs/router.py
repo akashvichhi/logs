@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.api_keys.dependencies import get_user_by_api_key
@@ -12,7 +12,7 @@ from app.logs.service import LogService
 
 router = APIRouter()
 
-@router.post("/ingest", response_model=LogOut)
+@router.post("/ingest", response_model=LogOut, status_code=status.HTTP_201_CREATED)
 def ingest_log(
     payload: LogIngest,
     owner: Annotated[User, Depends(get_user_by_api_key)],

@@ -4,6 +4,9 @@ export const antdConfig: ThemeConfig = {
   components: {
     Typography: {
       margin: 0,
-    }
+    },
+    Layout: {
+      headerBg: 'colorBgContainer',
+    },
   }
 };

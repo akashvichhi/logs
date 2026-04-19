@@ -1,6 +1,6 @@
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.api_keys.schemas import APIKeyCreate, APIKeyOut, APIKeyWithSecret
@@ -11,7 +11,7 @@ from app.core.database import get_db
 
 router = APIRouter()
 
-@router.post("", response_model=APIKeyWithSecret)
+@router.post("", response_model=APIKeyWithSecret, status_code=status.HTTP_201_CREATED)
 def create_api_key(
     data: APIKeyCreate,
     current_user: Annotated[User, Depends(get_current_user)],
@@ -26,7 +26,7 @@ def list_api_keys(
 ):
     return APIKeyService.list_api_keys(db, current_user)
 
-@router.delete("/{api_key_id}", status_code=204)
+@router.delete("/{api_key_id}", status_code=status.HTTP_204_NO_CONTENT)
 def revoke_api_key(
     api_key_id: int,
     current_user: Annotated[User, Depends(get_current_user)],

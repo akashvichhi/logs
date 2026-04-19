@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
 from typing import Optional
 
+from fastapi import HTTPException, status
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.auth import schemas
@@ -13,10 +15,6 @@ class AuthService:
     @staticmethod
     def get_user_by_username(db: Session, username: str) -> Optional[User]:
         return db.query(User).filter(User.username == username).first()
-    
-    @staticmethod
-    def get_user_by_email(db: Session, email: str) -> Optional[User]:
-        return db.query(User).filter(User.email == email).first()
 
     @staticmethod
     def get_user_by_id(db: Session, user_id: int) -> Optional[User]:
@@ -50,6 +48,35 @@ class AuthService:
     @staticmethod
     def create_access_token_for_user(user: User) -> str:
         return create_access_token({"sub": str(user.id)})
+    
+    @staticmethod
+    def check_user_exists(db: Session, username: str, email: str) -> str | None:
+        existing_user = db.query(User).filter(
+            or_(User.username == username, User.email == email)
+        ).first()
+
+        if existing_user:
+            if existing_user.username == username:
+                return "Username already registered"
+            if existing_user.email == email:
+                return "Email already registered"
+                
+        return None
+
+    @staticmethod
+    def change_password(
+        db: Session,
+        user: User,
+        current_password: str,
+        new_password: str,
+    ) -> None:
+        if not verify_password(current_password, user.password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Current password is incorrect.",
+            )
+        user.password_hash = get_password_hash(new_password)
+        db.commit()
 
 
 def seed_initial_admin() -> None:

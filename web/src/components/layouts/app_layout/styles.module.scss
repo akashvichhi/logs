@@ -9,9 +9,10 @@
     overflow: auto;
   }
 
-  .layout-sider :global(.ant-layout-sider-children) {
+  .layout-header {
+    align-items: center;
     display: flex;
-    flex-direction: column;
+    justify-content: flex-end;
   }
 
   .sider-logo {
@@ -26,10 +27,6 @@
   .sider-logo-title {
     color: #fff;
     margin: 0;
-  }
-
-  .sider-menu-wrapper {
-    flex: 1;
   }
 
   :global(.ant-layout-sider-collapsed) {

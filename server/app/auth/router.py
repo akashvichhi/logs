@@ -11,14 +11,15 @@ from app.core.database import get_db
 
 router = APIRouter()
 
-@router.post("/register", response_model=schemas.UserOut)
+@router.post("/register", response_model=schemas.UserOut, status_code=status.HTTP_201_CREATED)
 def register(user_in: schemas.UserCreate, db: Annotated[Session, Depends(get_db)]):
-    existingUsername = AuthService.get_user_by_username(db, user_in.username)
-    existingEmail = AuthService.get_user_by_email(db, user_in.email)
-    if existingUsername:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already registered")
-    if existingEmail:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
+    existing_user_error = AuthService.check_user_exists(db, user_in.username, user_in.email)
+    
+    if existing_user_error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, 
+            detail=existing_user_error
+        )
     user = AuthService.create_user(db, user_in)
     return user
 
@@ -35,3 +36,18 @@ def login(user_in: schemas.UserLogin, db: Annotated[Session, Depends(get_db)]):
 @router.get("/me", response_model=schemas.UserOut)
 def read_me(current_user: Annotated[User, Depends(get_current_user)]):
     return current_user
+
+
+@router.patch("/me/password", response_model=schemas.ChangePasswordOut)
+def change_password(
+    payload: schemas.ChangePasswordIn,
+    db: Annotated[Session, Depends(get_db)],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> schemas.ChangePasswordOut:
+    AuthService.change_password(
+        db=db,
+        user=current_user,
+        current_password=payload.current_password,
+        new_password=payload.new_password,
+    )
+    return schemas.ChangePasswordOut()

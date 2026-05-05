@@ -8,4 +8,5 @@ export interface ILogFilterState {
   service: string;
   dateRange: [Dayjs | null, Dayjs | null] | null;
   page: number;
+  pageSize: number;
 }

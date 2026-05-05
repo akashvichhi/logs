@@ -1,4 +1,4 @@
-import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { DownloadOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button, DatePicker, Flex, Input, Select } from 'antd';
 import type { RangePickerProps } from 'antd/es/date-picker';
 
@@ -13,13 +13,15 @@ import type { ILogFilterState } from './types';
 
 interface ILogsFiltersProps {
   filters: ILogFilterState;
+  selectedRowCount: number;
+  onExportCsv: () => void;
   onFilterChange: <K extends keyof ILogFilterState>(key: K, value: ILogFilterState[K]) => void;
   onReset: () => void;
 }
 
 type TRangeValue = Parameters<NonNullable<RangePickerProps['onChange']>>[0];
 
-const LogsFilters = ({ filters, onFilterChange, onReset }: ILogsFiltersProps) => {
+const LogsFilters = ({ filters, selectedRowCount, onExportCsv, onFilterChange, onReset }: ILogsFiltersProps) => {
   const [localQuery, setLocalQuery] = useState<string>(filters.query);
   const [localService, setLocalService] = useState<string>(filters.service);
 
@@ -99,6 +101,15 @@ const LogsFilters = ({ filters, onFilterChange, onReset }: ILogsFiltersProps) =>
 
       <Button icon={ <ReloadOutlined /> } onClick={ handleReset }>
         Reset
+      </Button>
+
+      <Button
+        disabled={ selectedRowCount === 0 }
+        icon={ <DownloadOutlined /> }
+        type="primary"
+        onClick={ onExportCsv }
+      >
+        Export CSV{ selectedRowCount > 0 ? ` (${selectedRowCount})` : '' }
       </Button>
     </Flex>
   );

@@ -5,13 +5,14 @@ import { memo, useCallback, useMemo } from 'react';
 import { useGetLogs } from '@src/services/logs';
 import type { ILogsSearchParams } from '@src/types/log';
 
-import { DEFAULT_PAGE_SIZE } from './constants';
 import LogsFilters from './filters';
-import { useLogsFilters } from './hooks';
+import { useLogsFilters, useRowSelection } from './hooks';
 import LogsTable from './table';
+import { exportLogsToCsv } from './utils';
 
 const LogsModule = () => {
-  const { filters, handleFilterChange, handleReset } = useLogsFilters();
+  const { filters, handleFilterChange, handlePageSizeChange, handleReset } = useLogsFilters();
+  const { selectedRows, rowSelection, clearSelection } = useRowSelection();
 
   const handlePageChange = useCallback(
     (page: number) => {
@@ -20,6 +21,11 @@ const LogsModule = () => {
     [handleFilterChange]
   );
 
+  const handleExportCsv = useCallback(() => {
+    exportLogsToCsv(selectedRows);
+    clearSelection();
+  }, [selectedRows, clearSelection]);
+
   const params = useMemo((): ILogsSearchParams => ({
     query:   filters.query || undefined,
     level:   filters.level || undefined,
@@ -27,7 +33,7 @@ const LogsModule = () => {
     from_:   filters.dateRange?.[0]?.toISOString() ?? undefined,
     to:      filters.dateRange?.[1]?.toISOString() ?? undefined,
     page:    filters.page,
-    limit:   DEFAULT_PAGE_SIZE,
+    limit:   filters.pageSize,
   }), [filters]);
 
   const { data, isLoading } = useGetLogs(params);
@@ -46,6 +52,8 @@ const LogsModule = () => {
       <Flex vertical gap="small">
         <LogsFilters
           filters={ filters }
+          selectedRowCount={ selectedRows.length }
+          onExportCsv={ handleExportCsv }
           onFilterChange={ handleFilterChange }
           onReset={ handleReset }
         />
@@ -54,8 +62,11 @@ const LogsModule = () => {
           data={ data?.results ?? [] }
           isLoading={ isLoading }
           page={ filters.page }
+          pageSize={ filters.pageSize }
+          rowSelection={ rowSelection }
           total={ data?.total ?? 0 }
           onPageChange={ handlePageChange }
+          onPageSizeChange={ handlePageSizeChange }
         />
       </Flex>
     </Flex >

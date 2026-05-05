@@ -1,5 +1,9 @@
 import { useCallback, useState } from 'react';
+import type { Key } from 'react';
 
+import type { ILogEntry } from '@src/types/log';
+
+import { DEFAULT_PAGE_SIZE } from './constants';
 import type { ILogFilterState } from './types';
 
 const DEFAULT_FILTERS: ILogFilterState = {
@@ -8,6 +12,7 @@ const DEFAULT_FILTERS: ILogFilterState = {
   service:   '',
   dateRange: null,
   page:      1,
+  pageSize:  DEFAULT_PAGE_SIZE,
 };
 
 export const useLogsFilters = () => {
@@ -26,6 +31,10 @@ export const useLogsFilters = () => {
     []
   );
 
+  const handlePageSizeChange = useCallback((size: number) => {
+    setFilters((prev) => ({ ...prev, pageSize: size, page: 1 }));
+  }, []);
+
   const handleReset = useCallback(() => {
     setFilters(DEFAULT_FILTERS);
   }, []);
@@ -33,6 +42,42 @@ export const useLogsFilters = () => {
   return {
     filters,
     handleFilterChange,
+    handlePageSizeChange,
     handleReset,
+  };
+};
+
+/**
+ * Manages row selection state for the logs table.
+ * Exposes a `rowSelection` config object consumable directly by Ant Design’s
+ * `<Table rowSelection={...}>` prop, plus helpers for the parent.
+ */
+export const useRowSelection = () => {
+  const [selectedRowKeys, setSelectedRowKeys] = useState<Key[]>([]);
+  const [selectedRows, setSelectedRows] = useState<ILogEntry[]>([]);
+
+  const handleSelectionChange = useCallback(
+    (keys: Key[], rows: ILogEntry[]) => {
+      setSelectedRowKeys(keys);
+      setSelectedRows(rows);
+    },
+    []
+  );
+
+  const clearSelection = useCallback(() => {
+    setSelectedRowKeys([]);
+    setSelectedRows([]);
+  }, []);
+
+  const rowSelection = {
+    selectedRowKeys,
+    onChange:                handleSelectionChange,
+    preserveSelectedRowKeys: false,
+  } as const;
+
+  return {
+    selectedRows,
+    rowSelection,
+    clearSelection,
   };
 };

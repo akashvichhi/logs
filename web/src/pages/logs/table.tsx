@@ -1,11 +1,11 @@
 import { Table, Tag, Typography, Popover } from 'antd';
-import type { TableColumnsType } from 'antd';
+import type { TableColumnsType, TableProps } from 'antd';
 
 import { memo, useMemo } from 'react';
 
 import type { ILogEntry, TLogLevel } from '@src/types/log';
 
-import { DEFAULT_PAGE_SIZE } from './constants';
+import { PAGE_SIZE_OPTIONS } from './constants';
 import styles from "./styles.module.scss";
 import { formatLogTimestamp, getLevelColor } from './utils';
 
@@ -15,7 +15,10 @@ interface ILogsTableProps {
   isLoading: boolean;
   total: number;
   page: number;
+  pageSize: number;
+  rowSelection: TableProps<ILogEntry>["rowSelection"];
   onPageChange: (page: number) => void;
+  onPageSizeChange: (size: number) => void;
 }
 
 const LogsTable = ({
@@ -23,7 +26,10 @@ const LogsTable = ({
   isLoading,
   total,
   page,
+  pageSize,
+  rowSelection,
   onPageChange,
+  onPageSizeChange,
 }: ILogsTableProps) => {
   const columns = useMemo((): TableColumnsType<ILogEntry> => [
     {
@@ -93,13 +99,15 @@ const LogsTable = ({
   }), []);
 
   const pagination = useMemo(() => ({
-    current:         page,
-    pageSize:        DEFAULT_PAGE_SIZE,
+    current:          page,
+    pageSize,
     total,
-    onChange:        onPageChange,
-    showSizeChanger: false,
-    showTotal:       (t: number) => `${t.toLocaleString()} logs`,
-  }), [page, total, onPageChange]);
+    onChange:         onPageChange,
+    onShowSizeChange: (_current: number, size: number) => onPageSizeChange(size),
+    showSizeChanger:  true,
+    pageSizeOptions:  PAGE_SIZE_OPTIONS.map((o) => o.value as number),
+    showTotal:        (t: number) => `${t.toLocaleString()} logs`,
+  }), [page, pageSize, total, onPageChange, onPageSizeChange]);
 
   return (
     <Table
@@ -109,6 +117,7 @@ const LogsTable = ({
       loading={ isLoading }
       pagination={ pagination }
       rowKey="id"
+      rowSelection={ rowSelection }
       size="small"
     />
   );
